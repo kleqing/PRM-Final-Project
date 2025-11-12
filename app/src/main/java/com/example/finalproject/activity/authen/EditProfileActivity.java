@@ -1,0 +1,231 @@
+package com.example.finalproject.activity.authen;
+
+import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.example.finalproject.R;
+import com.example.finalproject.utils.CloudinaryManager;
+import com.example.finalproject.utils.FileUtils;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+public class EditProfileActivity extends AppCompatActivity {
+
+    private ImageButton btnBack;
+    private ImageView imgAvatar;
+    private EditText edtFirstName, edtLastName, edtPhone, tvEmail, tvDob;
+    private ChipGroup chipGenderGroup;
+    private Button btnSave;
+
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
+
+    private Uri selectedImageUri;
+    private String cloudUrl = null;
+    private String gender = "";
+
+    // ✅ Lấy Cloudinary instance từ CloudinaryManager
+    private Cloudinary cloudinary;
+    private static final String UPLOAD_PRESET = "xuandai";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_guide_personal_info);
+
+        db = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
+
+        // ✅ Dùng CloudinaryManager thay vì tạo mới
+        cloudinary = CloudinaryManager.getInstance();
+
+        initUI();
+        loadUserData();
+
+        btnBack.setOnClickListener(v -> onBackPressed());
+        imgAvatar.setOnClickListener(v -> selectImageFromGallery());
+        tvDob.setOnClickListener(v -> showDatePickerDialog());
+        btnSave.setOnClickListener(v -> saveUserData());
+    }
+
+    private void initUI() {
+        btnBack = findViewById(R.id.btnBack);
+        imgAvatar = findViewById(R.id.imgAvatar);
+        edtFirstName = findViewById(R.id.edtFirstName);
+        edtLastName = findViewById(R.id.edtLastName);
+        edtPhone = findViewById(R.id.edtPhone);
+        tvEmail = findViewById(R.id.tvEmail);
+        tvDob = findViewById(R.id.tvDob);
+        chipGenderGroup = findViewById(R.id.chipGenderGroup);
+        btnSave = findViewById(R.id.btnSave);
+
+        chipGenderGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty()) {
+                int checkedId = checkedIds.get(0);
+                Chip selectedChip = group.findViewById(checkedId);
+                gender = selectedChip.getText().toString();
+            }
+        });
+    }
+
+    private void loadUserData() {
+        String uid = auth.getCurrentUser().getUid();
+        DocumentReference userRef = db.collection("users").document(uid);
+
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                edtFirstName.setText(documentSnapshot.getString("firstname"));
+                edtLastName.setText(documentSnapshot.getString("lastname"));
+                tvEmail.setText(documentSnapshot.getString("email"));
+                edtPhone.setText(documentSnapshot.getString("phone"));
+
+                Object dobObj = documentSnapshot.get("dob");
+                if (dobObj instanceof Timestamp) {
+                    Date date = ((Timestamp) dobObj).toDate();
+                    tvDob.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(date));
+                }
+
+                Object genderObj = documentSnapshot.get("gender");
+                boolean isMale = true;
+                if (genderObj instanceof Boolean) {
+                    isMale = (Boolean) genderObj;
+                }
+                chipGenderGroup.check(isMale ? R.id.chipMale : R.id.chipFemale);
+
+                String avatarUrl = documentSnapshot.getString("avatarUrl");
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    Glide.with(this).load(avatarUrl).into(imgAvatar);
+                }
+            }
+        }).addOnFailureListener(e ->
+                Toast.makeText(this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void selectImageFromGallery() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, 101);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
+            selectedImageUri = data.getData();
+            imgAvatar.setImageURI(selectedImageUri);
+            uploadImageToCloudinary();
+        }
+    }
+
+    private void uploadImageToCloudinary() {
+        new Thread(() -> {
+            try {
+                String filePath = FileUtils.getPath(this, selectedImageUri);
+                if (filePath == null) {
+                    runOnUiThread(() ->
+                            Toast.makeText(this, "Không thể lấy đường dẫn ảnh", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+
+                // ✅ Dùng CloudinaryManager
+                Cloudinary cloudinary = CloudinaryManager.getInstance();
+
+                // ❌ Bỏ upload_preset, upload trực tiếp (signed upload)
+                Map uploadResult = cloudinary.uploader().upload(
+                        filePath,
+                        ObjectUtils.emptyMap()
+                );
+
+                cloudUrl = uploadResult.get("secure_url").toString();
+
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Tải ảnh lên thành công!", Toast.LENGTH_SHORT).show());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }).start();
+    }
+
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, year1, month1, dayOfMonth) -> {
+                    String selectedDate = String.format("%02d/%02d/%04d", dayOfMonth, (month1 + 1), year1);
+                    tvDob.setText(selectedDate);
+                }, year, month, day);
+        datePickerDialog.show();
+    }
+
+    private void saveUserData() {
+        String firstName = edtFirstName.getText().toString().trim();
+        String lastName = edtLastName.getText().toString().trim();
+        String phone = edtPhone.getText().toString().trim();
+        String dob = tvDob.getText().toString().trim();
+
+        if (firstName.isEmpty() || lastName.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uid = auth.getCurrentUser().getUid();
+        DocumentReference userRef = db.collection("users").document(uid);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("firstname", firstName);
+        updates.put("lastname", lastName);
+        updates.put("phone", phone);
+
+        try {
+            Date parsedDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(dob);
+            updates.put("dob", new Timestamp(parsedDate));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (gender.equalsIgnoreCase("Nam")) {
+            updates.put("gender", true);
+        } else if (gender.equalsIgnoreCase("Nữ")) {
+            updates.put("gender", false);
+        }
+
+        if (cloudUrl != null) updates.put("avatarUrl", cloudUrl);
+
+        userRef.update(updates)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi khi lưu: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+}

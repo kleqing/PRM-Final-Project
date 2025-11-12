@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">FinalProject</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="navigation_drawer_open">Mở menu</string>
+    <string name="navigation_drawer_close">Đóng menu</string>
+    <string name="tour_image">Ảnh của tour</string>
+    <string name="guide_welcome_text">Xin chào, Hướng dẫn viên 👋</string>
+    <string name="upcoming_tours">Tour sắp tới</string>
+    <string name="default_web_client_id">860425705820-6bo44haotka8vc6tlg7tj62fp24o5963.apps.googleusercontent.com</string>
+</resources>

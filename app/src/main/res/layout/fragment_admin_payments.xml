@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+FILE: transaction_history_list.xml
+LOCATION: res/layout/
+PURPOSE: Layout chính cho màn hình lịch sử giao dịch
+USAGE: Sử dụng trong Activity hoặc Fragment để hiển thị danh sách giao dịch
+STRUCTURE:
+  - Header: Tiêu đề "Lịch sử giao dịch"
+  - ListView/RecyclerView: Danh sách các item giao dịch (sử dụng transaction_item.xml)
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <!-- HEADER: Tiêu đề -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#FFFFFF">
+
+        <TextView
+            android:id="@+id/txtHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lịch sử giao dịch"
+            android:textColor="#D71818"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- DANH SÁCH GIAO DỊCH: ListView hoặc RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerAdminPayments"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        tools:listitem="@layout/item_payment" />
+
+</LinearLayout>

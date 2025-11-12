@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_nav_header"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:padding="16dp">
+
+    <!-- Ảnh đại diện -->
+    <ImageView
+        android:id="@+id/ivAdminAvatar"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:src="@drawable/ic_circle"
+        android:contentDescription="Admin Avatar"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_avatar_circle"
+        android:padding="3dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Họ tên admin -->
+    <TextView
+        android:id="@+id/tvAdminName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tên Admin"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Email -->
+    <TextView
+        android:id="@+id/tvAdminEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="admin@email.com"
+        android:textColor="#E0E0E0"
+        android:textSize="13sp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Vai trò (role) -->
+    <TextView
+        android:id="@+id/tvRole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quản trị viên"
+        android:textColor="#B3E5FC"
+        android:textSize="13sp"
+        android:textStyle="italic"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Trạng thái -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Offline"
+        android:textSize="12sp"
+        android:textStyle="italic"
+        android:textColor="#9E9E9E"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#FFFFFF40" />
+
+</LinearLayout>

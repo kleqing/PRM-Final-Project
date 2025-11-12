@@ -1,0 +1,96 @@
+plugins {
+    alias(libs.plugins.android.application)
+    id("com.google.gms.google-services") // 🔥 Cần cho Firebase
+}
+
+android {
+    namespace = "com.example.finalproject"
+    compileSdk = 36 // ⚠️ Dùng SDK chính thức hiện có
+
+    defaultConfig {
+        applicationId = "com.example.finalproject"
+        minSdk = 26 // đủ để chạy Firebase ổn định
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // 🔹 Cấu hình ký APK phát hành
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore/touriovn_ks.jks") // đường dẫn tới file .jks
+            storePassword = "TourioVN123"
+            keyAlias = "touriovn_key"
+            keyPassword = "TourioVN123"
+        }
+    }
+
+    // 🔹 Áp dụng cấu hình ký vào build release
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("release") // 🔹 thêm dòng này
+        }
+    }
+
+    compileOptions {
+        // 🔹 Vì bạn dùng Java nên giữ version 11 (hoặc 17 nếu đã nâng cấp)
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    // AndroidX cơ bản
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.activity)
+    implementation(libs.constraintlayout)
+    implementation(libs.coordinatorlayout)
+    implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation("com.firebaseui:firebase-ui-firestore:8.0.2")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.google.android.material:material:1.12.0")
+    // Firebase BOM (bom = Bill of Materials -> quản lý version đồng bộ)
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Firebase modules bạn cần
+    implementation("com.google.firebase:firebase-auth")
+
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // BCrypt (mã hóa mật khẩu)
+    implementation("org.mindrot:jbcrypt:0.4")
+
+    // Unit tests
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+
+    // Glide - thư viện load ảnh từ URL
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+
+    // Thư viện slide ảnh tự động
+    implementation("com.github.denzcoskun:ImageSlideshow:0.1.2")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // Firebase Storage
+    implementation("com.google.firebase:firebase-storage:21.0.0")
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.gridlayout:gridlayout:1.0.0")
+    implementation(files("libs/zpdk-release-v3.1.aar"))
+
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("commons-codec:commons-codec:1.15")
+}
