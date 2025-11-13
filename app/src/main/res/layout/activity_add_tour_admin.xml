@@ -317,25 +317,6 @@
                 </LinearLayout>
 
                 <!-- Hướng dẫn viên -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Hướng dẫn viên"
-                    android:textSize="14sp"
-                    android:textColor="#475569"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tvSelectedGuides"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:background="@drawable/bg_spinner"
-                    android:text="Chọn hướng dẫn viên"
-                    android:textSize="16sp"
-                    android:textColor="#1E293B"
-                    android:layout_marginBottom="20dp" />
 
                 <!-- Ảnh -->
                 <com.google.android.material.button.MaterialButton

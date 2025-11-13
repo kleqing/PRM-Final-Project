@@ -47,7 +47,7 @@ public class AdminAddTourActivity extends AppCompatActivity {
     private static final String TAG = "AdminAddTourActivity";
     private EditText etTitle, etDescription, etDestination, etDuration, etItinerary, etPrice, etStartDate, etEndDate;
     private Button btnChooseImages, btnCancel, btnSave;
-    private TextView tvImageCount, tvSelectedGuides;
+    private TextView tvImageCount;
     private ProgressBar progressBar;
     private Spinner spStatus;
 
@@ -66,6 +66,8 @@ public class AdminAddTourActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_tour_admin);
 
         db = FirebaseFirestore.getInstance();
+
+        seedLocations();
 
         // Ánh xạ view
         spStatus = findViewById(R.id.spStatus);
@@ -113,7 +115,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         tvImageCount = findViewById(R.id.tvImageCount);
         progressBar = findViewById(R.id.progressBar);
-        tvSelectedGuides = findViewById(R.id.tvSelectedGuides);
 
         // Load hướng dẫn viên
         loadGuides();
@@ -143,7 +144,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
     // ===========================================================
     private void loadGuides() {
         db.collection("users")
-                .whereEqualTo("role", "guide")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     guideIds.clear();
@@ -160,8 +160,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
                         guideNames.add(fullName.trim().isEmpty() ? doc.getId() : fullName.trim());
                     }
 
-                    // Cho phép click chọn danh sách
-                    tvSelectedGuides.setOnClickListener(v -> showMultiSelectDialog());
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Lỗi tải hướng dẫn viên: " + e.getMessage(), Toast.LENGTH_SHORT).show());
@@ -186,13 +184,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
                     } else {
                         selectedGuideIds.remove(id);
                         selectedGuideNames.remove(name);
-                    }
-                })
-                .setPositiveButton("Xong", (dialog, which) -> {
-                    if (selectedGuideNames.isEmpty()) {
-                        tvSelectedGuides.setText("Chọn hướng dẫn viên");
-                    } else {
-                        tvSelectedGuides.setText(String.join(", ", selectedGuideNames));
                     }
                 })
                 .setNegativeButton("Hủy", null)
@@ -293,11 +284,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
         if (title.isEmpty() || desc.isEmpty() || dest.isEmpty() || duration.isEmpty() ||
                 itinerary.isEmpty() || priceStr.isEmpty() || startStr.isEmpty() || endStr.isEmpty()) {
             Toast.makeText(this, "⚠️ Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (selectedGuideIds.isEmpty()) {
-            Toast.makeText(this, "⚠️ Vui lòng chọn ít nhất một hướng dẫn viên!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -412,9 +398,6 @@ public class AdminAddTourActivity extends AppCompatActivity {
                 tour.put("price", price);
                 tour.put("start_date", new Timestamp(startDate));
                 tour.put("end_date", new Timestamp(endDate));
-                //tour.put("guideIds", selectedGuideIds);
-                // Không thêm hướng dẫn viên vào tour khi tạo
-                tour.put("guideIds", new ArrayList<>()); // danh sách rỗng
 
                 tour.put("images", imageUrls);
                 tour.put("status", status);
@@ -515,4 +498,45 @@ public class AdminAddTourActivity extends AppCompatActivity {
         }
     }
 
+    // Seed data
+    private void seedLocations() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Map<String, Object> hcm = new HashMap<>();
+        hcm.put("name", "TP. Hồ Chí Minh");
+        db.collection("locations").document("HCM").set(hcm);
+
+        Map<String, Object> hanoi = new HashMap<>();
+        hanoi.put("name", "Hà Nội");
+        db.collection("locations").document("HN").set(hanoi);
+
+        // Subcollection cho HCM
+        db.collection("locations").document("HCM")
+                .collection("wards")
+                .add(new HashMap<String, Object>() {{
+                    put("name", "Quận 1");
+                }});
+        db.collection("locations").document("HCM")
+                .collection("wards")
+                .add(new HashMap<String, Object>() {{
+                    put("name", "Quận 3");
+                }});
+        db.collection("locations").document("HCM")
+                .collection("wards")
+                .add(new HashMap<String, Object>() {{
+                    put("name", "Quận Bình Thạnh");
+                }});
+
+        // Subcollection cho Hà Nội
+        db.collection("locations").document("HN")
+                .collection("wards")
+                .add(new HashMap<String, Object>() {{
+                    put("name", "Quận Hoàn Kiếm");
+                }});
+        db.collection("locations").document("HN")
+                .collection("wards")
+                .add(new HashMap<String, Object>() {{
+                    put("name", "Quận Đống Đa");
+                }});
+    }
 }
